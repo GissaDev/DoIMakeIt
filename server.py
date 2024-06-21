@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify
 from geopy.distance import geodesic
 import time
+import logging
 
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
 previous_data = {
     'latitude': None,
@@ -19,6 +23,8 @@ def update_location():
     longitude = data['longitude']
     timestamp = time.time()
 
+    logging.debug(f'Received data: {data}')
+    
     if previous_data['latitude'] is not None and previous_data['longitude'] is not None:
         prev_coords = (previous_data['latitude'], previous_data['longitude'])
         curr_coords = (latitude, longitude)
@@ -37,7 +43,9 @@ def update_location():
     previous_data['longitude'] = longitude
     previous_data['timestamp'] = timestamp
 
+    logging.debug(f'Calculated speed: {speed} m/s')
+
     return jsonify({'speed': speed})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)

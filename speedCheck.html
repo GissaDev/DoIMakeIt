@@ -12,16 +12,24 @@
         let watchId;
 
         function startTracking() {
+            console.log('Starting tracking...');
             if (navigator.geolocation) {
-                watchId = navigator.geolocation.watchPosition(sendPosition);
+                console.log('Geolocation is supported.');
+                watchId = navigator.geolocation.watchPosition(sendPosition, showError, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
             } else {
+                console.error("Geolocation is not supported by this browser.");
                 alert("Geolocation is not supported by this browser.");
             }
         }
 
         function sendPosition(position) {
-            fetch('http://10.38.101.4:3000/update_location', {
-                method: 'POST',
+            console.log('Position received:', position.coords);
+            fetch('http://192.168.178.220:5000/update_location', {
+                method: 'POST', 
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -30,11 +38,26 @@
                     longitude: position.coords.longitude
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Server response:', response);
+                return response.json();
+            })
             .then(data => {
+                console.log('Data received from server:', data);
                 document.getElementById('speed').innerText = 'Speed: ' + data.speed.toFixed(2) + ' m/s';
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+        }
+
+        function showError(error) {
+            let errorTypes = {
+                1: 'Permission denied',
+                2: 'Position unavailable',
+                3: 'Timeout'
+            };
+            console.error('Geolocation error (' + error.code + '): ' + errorTypes[error.code]);
         }
     </script>
 </body>
