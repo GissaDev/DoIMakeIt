@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GPS Tracker</title>
+</head>
+<body>
+    <h1>GPS Tracker</h1>
+    <button onclick="startTracking()">Start Tracking</button>
+    <p id="speed">Speed: N/A</p>
+
+    <script>
+        let watchId;
+
+        function startTracking() {
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(sendPosition);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function sendPosition(position) {
+            fetch('http://10.38.101.4:3000/update_location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('speed').innerText = 'Speed: ' + data.speed.toFixed(2) + ' m/s';
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
